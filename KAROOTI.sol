@@ -15,10 +15,10 @@ contract KAROOTI is ERC20, ERC20Burnable, Ownable {
 
   uint256 private _totalSupply;
   uint256 private MAXSUP;
-  uint256 constant MAXIMUMSUPPLY=117000000000*10**18;
+  uint256 constant MAXIMUMSUPPLY=17000000000*10**18;
 
   constructor() ERC20("KAROOTI", "WHY") { 
-      _mint(msg.sender, 17000000000 * 10 ** 18);
+      _mint(msg.sender, 7000000000 * 10 ** 18);
 
   }
 
