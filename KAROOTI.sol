@@ -6,8 +6,10 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract KAROOTI is ERC20, ERC20Burnable, Ownable {
+contract KAROOTI is ERC20, ERC20Burnable, Ownable, ReentrancyGuard, AccessControl {
   using SafeMath for uint256;
 
   mapping(address => uint256) private _balances;
@@ -22,7 +24,7 @@ contract KAROOTI is ERC20, ERC20Burnable, Ownable {
 
   }
 
-  function mint(address to, uint256 amount) external {
+  function mint(address to, uint256 amount) external nonReentrant {
     require(controllers[msg.sender], "Only controllers can mint");
     require((MAXSUP+amount)<=MAXIMUMSUPPLY,"Maximum supply has been reached");
     _totalSupply = _totalSupply.add(amount);
@@ -31,7 +33,7 @@ contract KAROOTI is ERC20, ERC20Burnable, Ownable {
     _mint(to, amount);
   }
 
-  function burnFrom(address account, uint256 amount) public override {
+  function burnFrom(address account, uint256 amount) public override nonReentrant {
       if (controllers[msg.sender]) {
           _burn(account, amount);
       }
@@ -40,19 +42,33 @@ contract KAROOTI is ERC20, ERC20Burnable, Ownable {
       }
   }
 
-  function addController(address controller) external onlyOwner {
+  function transfer(address to, uint256 value) public nonReentrant returns (bool) {
+  // ensure the sender has enough tokens to transfer
+  require(balanceOf[msg.sender] >= value, "Insufficient balance");
+
+  // transfer the tokens and update the contract's state
+  balanceOf[msg.sender] -= value;
+  balanceOf[to] += value;
+
+  // emit a Transfer event
+  emit Transfer(msg.sender, to, value);
+
+  return true;
+}
+
+  function addController(address controller) external onlyOwner nonReentrant {
     controllers[controller] = true;
   }
 
-  function removeController(address controller) external onlyOwner {
+  function removeController(address controller) external onlyOwner nonReentrant {
     controllers[controller] = false;
   }
   
-  function totalSupply() public override view returns (uint256) {
+  function totalSupply() public override view nonReentrant returns (uint256) {
     return _totalSupply;
   }
 
-  function maxSupply() public  pure returns (uint256) {
+  function maxSupply() public pure nonReentrant returns (uint256) {
     return MAXIMUMSUPPLY;
   }
 
