@@ -41,9 +41,8 @@ contract KAROOTI is ERC20, ERC20Burnable, Ownable, ReentrancyGuard {
       }
   }
 
-  function transfer(address to, uint256 value) public nonReentrant returns (bool) {
-  // ensure the sender has enough tokens to transfer
-  require(balanceOf[msg.sender] >= value, "Insufficient balance");
+  function transfer(address to, uint256 value) public override nonReentrant returns (bool) {
+    require(balanceOf(msg.sender) >= value, "Insufficient balance");
 
   // transfer the tokens and update the contract's state
   balanceOf[msg.sender] -= value;
